@@ -1,5 +1,5 @@
 import { Route, Link } from "react-router-dom";
-import Candidate from "./components/CandidateRegister";
+import CandidateRegister from "./components/CandidateRegister";
 import VoterRegister from "./components/VoterRegister";
 import Winner from "./components/Winner";
 import Vote from "./contracts/Vote.json";
@@ -9,12 +9,14 @@ import "./App.css";
 import ElectionCommision from "./components/ElectionCommision";
 
 
+
 function App() {
   const [state, setState] = useState({
     web3: null,
     contract: null,
   });
   const [account, setAccount] = useState("Not connected");
+ 
 
   useEffect(() => {
     async function init() {
@@ -56,6 +58,7 @@ function App() {
       setAccount(selectedAccountAddress);
     }
   };
+  
 
   return (
     <>
@@ -75,7 +78,7 @@ function App() {
         <a>
           <Link to="/electioncommision">Election Commision</Link>
         </a>
-        <a><Winner state={state}></Winner></a>
+
 
       </div>
     <div className="maiNcontainer">
@@ -92,14 +95,14 @@ function App() {
       <p className="ca">Connected Account:{account}</p>
       
       <form className="label0" id="myForm">
-        <label htmlFor="">Choose an account</label>
+        <label htmlFor="selectNumber">Choose an account</label>
         <select className="innerBox" id="selectNumber" onChange={selectAccount}>
           <option></option>
         </select>
       </form>
 
       <Route path="/candidate">
-        <Candidate state={state} account={account}></Candidate>
+        <CandidateRegister state={state} account={account}></CandidateRegister>
       </Route>
       <Route path="/voter">
         <VoterRegister state={state} account={account}></VoterRegister>
@@ -107,6 +110,9 @@ function App() {
       <Route path="/electioncommision">
         <ElectionCommision state={state} account={account}></ElectionCommision>
       </Route>
+
+
+      
 
       {/* <Winner state={state}></Winner> */}
     </div>

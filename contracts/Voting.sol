@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.5.0 <0.9.0;
 
+
+
 contract Vote {
     address electionCommission;
     address public winner;
@@ -27,58 +29,33 @@ contract Vote {
     uint256 nextCandidateId = 1;
     uint256 startTime;
     uint256 endTime;
+    mapping (address=> bool) isVoter;
+    mapping(address=> bool) isCandidate;
     mapping(uint256 => Voter) voterDetails;
     mapping(uint256 => Candidate) candidateDetails;
-    bool stopVoting;
+    bool stopVoting=true;
     Voter[] private voteArr;
+    uint x;
+    uint y;
+
 
     constructor() {
         electionCommission = msg.sender;
     }
 
     modifier isVotingOver() {
-        require(endTime > block.timestamp || stopVoting, "Voting is over");
+        require(stopVoting==false , "Voting is over");
         _;
     }
 
-    function voterVerification(address _person) internal view returns (bool) {
-        Voter[] memory arr = new Voter[](nextVoterId - 1);
-
-        for (uint256 i = 1; i < nextVoterId; i++) {
-            arr[i - 1] = voterDetails[i];
-        }
-        for (uint256 i = 0; i < arr.length; i++) {
-            if (arr[i].voterAddress == _person) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    function candidateVerification(address _person)
-        internal
-        view
-        returns (bool)
-    {
-        Candidate[] memory arr = new Candidate[](nextCandidateId - 1);
-
-        for (uint256 i = 1; i < nextCandidateId; i++) {
-            arr[i - 1] = candidateDetails[i];
-        }
-        for (uint256 i = 0; i < arr.length; i++) {
-            if (arr[i].candidateAddress == _person) {
-                return false;
-            }
-        }
-        return true;
-    }
-
+    
+        
     function voterRegister(
         string calldata _name,
         uint256 _age,
         string calldata _gender
     ) external returns (bool) {
-        require(voterVerification(msg.sender), "You have already registerd");
+        require(isVoter[msg.sender]!=true, "You have already registerd");
         require(_age >= 18, "You are not eligible to vote");
         voterDetails[nextVoterId] = Voter(
             _name,
@@ -88,12 +65,14 @@ contract Vote {
             0,
             msg.sender
         );
-        voteArr.push(voterDetails[nextVoterId]);
+        isVoter[msg.sender]=true;
         nextVoterId++;
         return true;
     }
 
     function vote(uint256 _voterId, uint256 _id) external isVotingOver {
+        require(isVoter[msg.sender]==true,"you are not registered");
+
         require(
             voterDetails[_voterId].voteCandidateId == 0,
             "You have already voted"
@@ -102,7 +81,9 @@ contract Vote {
             voterDetails[_voterId].voterAddress == msg.sender,
             "You are not a voter"
         );
-        require(startTime != 0, "Voting has not started");
+        
+        require(startTime != 0 && block.timestamp>startTime, "Voting has not started");
+        require(endTime>block.timestamp, "voting is over");
         require(nextCandidateId > 2, "There are no candidates to vote");
         require(_id < 3, "Candidate does not exist");
         voterDetails[_voterId].voteCandidateId = _id;
@@ -116,7 +97,7 @@ contract Vote {
         string calldata _gender
     ) external {
         require(
-            candidateVerification(msg.sender),
+            isCandidate[msg.sender]!=true,
             "You have already registerd"
         );
         require(_age >= 18, "You are not eligible to be a candidate");
@@ -131,6 +112,7 @@ contract Vote {
             0
         );
         nextCandidateId++;
+        isCandidate[msg.sender]=true;
     }
 
     function result() external {
@@ -138,6 +120,8 @@ contract Vote {
             msg.sender == electionCommission,
             "You are not from election commision"
         );
+        require(stopVoting==false,"first continue voting that has been stopped");
+        require(endTime<block.timestamp,"voting is going on");
         //require - for timings
         //require- emergency
         //require- to check whether candidates have registered for this or not
@@ -191,9 +175,23 @@ contract Vote {
     }
 
     function emergency() public {
+        require(msg.sender==electionCommission,"you are not from election commision");
         stopVoting = true;
+        x=block.timestamp;
+    }
+    function freeEmergency() public{
+        require(msg.sender==electionCommission,"you are not from election commision");
+        if(stopVoting==true)
+        {
+            stopVoting=false;
+            y=block.timestamp;
+            uint a=y-x;
+            endTime=a+endTime;
+        }
     }
 }
+
+
 
 // Candidate Registration Page
 // Candidate Login Page

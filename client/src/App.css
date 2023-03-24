@@ -62,7 +62,17 @@ svg {
   font-size: 18px;
   font-weight: 100;
 }
-
+.freeemerBtn{
+   width: 150px;
+  height: 40px;
+  cursor: pointer;
+  background-color: #29fba0;
+  border-radius: 10px;
+  border: 2px solid #00ab42;
+  margin-left: 32%;
+  justify-content: center;
+  align-items: center;
+}
 /* button end*/
 .regBtn {
   width: 150px;
